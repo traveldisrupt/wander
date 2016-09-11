@@ -65,7 +65,7 @@ class TripView(GenericAPIView):
 
         if action == 'accept':
             Trip.objects.filter(id=trip_id).update(guide=guide, status='live')
-        elif action == 'cancelled':
+        elif action == 'cancel':
             Trip.objects.filter(id=trip_id).update(guide=guide, status='cancelled', end_time=datetime.datetime.now(tz=utc))
 
         return Response({'status': 'success'})
@@ -100,15 +100,15 @@ class TripView(GenericAPIView):
                                    {'category': 'Landmark', 'title': 'AT&T Park',
                                     'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.',
                                     'distance': '0.2 miles',
-                                    'lat': '37.809382',
-                                    'lon': '-122.414465'},
+                                    'lat': '37.7786',
+                                    'lon': '-122.3893'},
                                    {'category': 'Restaurants',
                                     'title': "Pedro's Cantina",
                                     'text': 'Mexican food & margaritas served in a roomy converted warehouse outfitted with many high-def TVs.',
                                     'distance': '0.3 miles',
                                     'rating': 4,
-                                    'lat': '37.809382',
-                                    'lon': '-122.414465'},
+                                    'lat': '37.77935',
+                                    'lon': '-122.39051'},
                                    ],
                          'current_location': current_location,
                          'status': trip.status,
