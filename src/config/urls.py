@@ -17,9 +17,6 @@ urlpatterns = patterns('',
     # Auth API
     url(r'^api/1/', include('administration.urls')),
 
-    # Api docs
-    url(r'^docs/', include('rest_framework_swagger.urls')),
-
     # Index
     url(r'^', include('starter_app.urls')),
 

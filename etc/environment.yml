@@ -1,4 +1,4 @@
-name: django-starter
+name: wander-server
 dependencies:
 - python=3.5
 - django
