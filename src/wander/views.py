@@ -1,5 +1,7 @@
 import urllib
+import re
 import requests
+from django.conf import settings
 from rest_framework import exceptions
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +12,10 @@ from wander.serializers import CreateTripSerializer
 from wander.models import Trip
 from wander.serializers import ViewTripSerializer
 
+from twilio.util import TwilioCapability
+import twilio.twiml
+
+phone_pattern = re.compile(r"^[\d\+\-\(\) ]+$")
 
 class TripView(GenericAPIView):
     """
@@ -99,31 +105,51 @@ class ViewTripView(GenericAPIView):
         return Response({'status': 'success', 'data': data})
 
 
-# class TwilioTokenView(GenericAPIView):
+class TwilioTokenView(GenericAPIView):
+    """
+    ### Twilio token.
+
+    """
+    permission_classes = ()
+    allowed_methods = ('GET',)
+
+    def get(self, request, *args, **kwargs):
+        # get credentials for environment variables
+        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID')
+        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN')
+        application_sid = getattr(settings, 'TWILIO_TWIML_APP_SID')
+
+        username = 'padmaja-device'
+        identity = username
+
+        # Create a Capability Token
+        capability = TwilioCapability(account_sid, auth_token)
+        capability.allow_client_outgoing(application_sid)
+        capability.allow_client_incoming(identity)
+        token = capability.generate()
+
+        return Response({'identity': identity, 'toke ': token})
+
+
+# class TwilioVoiceView(GenericAPIView):
 #     """
 #     ### Twilio token.
 #
 #     """
 #     permission_classes = ()
-#     allowed_methods = ('GET',)
-#     serializer_class = TwilioTokenSerializer
+#     allowed_methods = ('POST',)
 #
-# @app.route('/token', methods=['GET'])
-# def token():
-#     # get credentials for environment variables
-#     account_sid = os.environ['TWILIO_ACCOUNT_SID']
-#     auth_token = os.environ['TWILIO_AUTH_TOKEN']
-#     application_sid = os.environ['TWILIO_TWIML_APP_SID']
+#     def post(self, request, *args, **kwargs):
+#         resp = twilio.twiml.Response()
+#         if "To" in request.data and request.data["To"] != '':
+#             dial = resp.dial(callerId=getattr(settings,'TWILIO_CALLER_ID'))
+#             # wrap the phone number or client name in the appropriate TwiML verb
+#             # by checking if the number given has only digits and format symbols
+#             if phone_pattern.match(request.data["To"]):
+#                 dial.number(request.form["To"])
+#             else:
+#                 dial.client(request.form["To"])
+#         else:
+#             resp.say("Thanks for calling!")
 #
-#     # Generate a random user name
-#     username = 'padmaja-device_123456789'
-#     identity = username
-#
-#     # Create a Capability Token
-#     capability = TwilioCapability(account_sid, auth_token)
-#     capability.allow_client_outgoing(application_sid)
-#     capability.allow_client_incoming(identity)
-#     token = capability.generate()
-#
-#     # Return token info as JSON
-#     return jsonify(identity=identity, token=token)
+#         return Response({'identity': identity, 'toke ': token})
