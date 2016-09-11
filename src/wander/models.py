@@ -12,6 +12,7 @@ class Guide(models.Model):
 
 
 class Traveler(models.Model):
+    username = models.CharField(max_length=30, blank=True, null=True)
     name = models.CharField(max_length=30, blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
     occupation = models.CharField(max_length=100, blank=True, null=True)
@@ -27,8 +28,10 @@ class Trip(models.Model):
     start_location = JSONField(default={})
     end_location = JSONField(default={})
     rating = models.IntegerField(blank=True, null=True)
+    status = models.CharField(max_length=12, default='Waiting')
 
     def save(self, *args, **kwargs):
         """ On save, update timestamps"""
         if not self.id:  # On create
             self.start_time = datetime.datetime.now(tz=utc)
+        return super(Trip, self).save(*args, **kwargs)

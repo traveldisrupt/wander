@@ -8,7 +8,7 @@ CELERY_CREATE_MISSING_QUEUES = True
 
 CELERY_DEFAULT_QUEUE = 'task_queue'
 
-CELERY_ROUTES = {'starter_app.tasks.test_task': {'queue': 'test_queue'},}
+CELERY_ROUTES = {'wander.tasks.test_task': {'queue': 'test_queue'},}
 
 # Redis
 REDIS_PORT = 6379
@@ -65,12 +65,12 @@ CELERY_TASK_RESULT_EXPIRES = 600
 
 CELERYBEAT_SCHEDULE = {
     'periodic_test_task': {
-        'task': 'starter_app.tasks.test_task',
+        'task': 'wander.tasks.test_task',
         'schedule': timedelta(seconds=30),
         'args': ()
     },
     'periodic_default_task': {
-        'task': 'starter_app.tasks.default_task',
+        'task': 'wander.tasks.default_task',
         'schedule': timedelta(seconds=2),
         'args': ()
     }

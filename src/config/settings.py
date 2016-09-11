@@ -187,7 +187,7 @@ LOGIN_URL = '/accounts/login'
 
 FIXTURE_DIRS = ['config/fixtures']
 
-SITE_HEADER = 'Django Starter'
+SITE_HEADER = 'Wander'
 
 CACHE_DIR = os.path.join(PROJECT_DIR, 'var/cache')
 

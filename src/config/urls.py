@@ -20,7 +20,4 @@ urlpatterns = patterns('',
     # Wander API
     url(r'^api/1/', include('wander.urls', namespace='wander-api')),
 
-    # Index
-    url(r'^', include('starter_app.urls')),
-
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,8 +1,13 @@
+import urllib
+import requests
 from rest_framework import exceptions
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from wander.serializers import TripSerializer
+from wander.models import Traveler
+from wander.serializers import CreateTripSerializer
+from wander.models import Trip
 
 
 class TripView(GenericAPIView):
@@ -22,37 +27,53 @@ class TripView(GenericAPIView):
         return Response({'status': 'success', 'data': data})
 
     def get(self, request, *args, **kwargs):
-        data = {'trip': 'trip_123',
-                'traveler':
-                    {'name': 'Daniela',
-                     'age': '26',
-                     'occupation': 'Web Designer',
-                     'country': 'United States',
-                     'city': 'New York',
-                     'interest': {'Movies', 'Restuarants', 'Baseball'}}
+
+        r = requests.get("https://thingspace.io/get/latest/dweet/for/padmaja-device")
+        current_location = r.json()['with'][0]['content']
+        print(current_location)
+
+        data = {'trip': {'id': 'trip_123',
+                         'start_time': '2015-08-1 11:01',
+                         'traveler':
+                             {'name': 'Daniela',
+                              'age': '26',
+                              'occupation': 'Web Designer',
+                              'country': 'United States',
+                              'city': 'New York',
+                              'interest': {'Movies', 'Restuarants', 'Baseball'},
+                              'bio': 'I love exploring and learning. The world is flat.'},
+                         'start_location': {'lat': '37.7786', 'lon': '122.3893'},
+                         'end_location': {'lat': '37.7786', 'lon': '122.3893'},
+                         'current_location': current_location,
+                         'status': 'live',
+                         }
                 }
 
         return Response({'status': 'success', 'data': data})
 
 
-        # class Guide(models.Model):
-        #     status_online = models.BooleanField(default=False)
-        #     status_on_trip = models.BooleanField(default=False)
-        #
-        #
-        # class Traveler(models.Model):
-        #     name = models.CharField(max_length=30, blank=True, null=True)
-        #     age = models.IntegerField(blank=True, null=True)
-        #     occupation = models.CharField(max_length=100, blank=True, null=True)
-        #     interest = JSONField(default={})
-        #     country = models.CharField(max_length=100, blank=True, null=True)
-        #     bio = models.TextField(blank=True, null=True)
-        #
-        #
-        # class Trip(models.Model):
-        #     traveler = models.ForeignKey('wander.Traveler')
-        #     start_time = models.DateTimeField(null=True, blank=True)
-        #     end_time = models.DateTimeField(null=True, blank=True)
-        #     start_location = JSONField(default={})
-        #     end_location = JSONField(default={})
-        #     rating = models.IntegerField(blank=True, null=True)
+class CreateTripView(GenericAPIView):
+    """
+    ### Get the available trips.
+
+    """
+    permission_classes = ()
+    allowed_methods = ('POST',)
+    serializer_class = CreateTripSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        # If user creates a trip, check if there is more than one trip entry for the user. If so, then cancel previous
+        # and create a new trip.
+        username = request.data.get('username')
+        traveler, created = Traveler.objects.get_or_create(username=username)
+
+        # Create trip
+        if Trip.objects.filter(traveler=traveler, status='Waiting').exists():
+            Trip.objects.update(status='Cancelled')
+
+        trip = Trip.objects.create(traveler=traveler)
+
+        data = {'trip': traveler.username}
+
+        return Response({'status': 'success', 'data': data})

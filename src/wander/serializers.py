@@ -5,8 +5,11 @@ logger = getLogger('django')
 
 
 class TripSerializer(serializers.Serializer):
-    traveler = serializers.SerializerMethodField(source='get_traveler')
 
     def get_traveler(self, obj):
         return "Traveler"
+
+
+class CreateTripSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
 
