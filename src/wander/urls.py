@@ -12,7 +12,8 @@ urlpatterns = (
     url(r'^trip/view/$', views.ViewTripView.as_view(), name='view_trip'),
     # url(r'^trip/cancel/$', views.CancelTripView.as_view(), name='cancel_trip'),
 
-    url(r'^$', views.api_root)
+    url(r'^twilio/token/$', views.TwilioTokenView.as_view(), name='twilio_token_view'),
+    url(r'^$', views.api_root),
 )
 
 urlpatterns = format_suffix_patterns(urlpatterns)

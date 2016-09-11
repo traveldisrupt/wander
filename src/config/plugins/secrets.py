@@ -35,3 +35,8 @@ TASK_QUEUE = os.environ.get('TASK_QUEUE', '') in ['True', True, 'true']
 SECRET_KEY = os.environ.get('DJANGO_SECRET', 'dvznxtu08$$a9jxjh=jkkswbe5-dw5+ea%4k((1k69ooi7d(hj')
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_TWIML_APP_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_CALLER_ID = os.environ.get('TWILIO_ACCOUNT_SID', '')
