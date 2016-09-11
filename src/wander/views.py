@@ -72,7 +72,7 @@ class TripView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
 
-        r = requests.get("https://thingspace.io/get/latest/dweet/for/padmaja-device")
+        r = requests.get("https://thingspace.io/get/latest/dweet/for/arthur")
         current_location = r.json()['with'][0]['content']
 
         # Hard code get latest trip created.
