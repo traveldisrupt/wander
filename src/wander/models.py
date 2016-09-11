@@ -8,6 +8,9 @@ from django.contrib.postgres.fields import JSONField
 
 class Guide(models.Model):
     username = models.CharField(max_length=30, blank=True, null=True)
+    name = models.CharField(max_length=30, blank=True, null=True)
+    age = models.IntegerField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
     status_online = models.BooleanField(default=False)
     status_on_trip = models.BooleanField(default=False)
 
