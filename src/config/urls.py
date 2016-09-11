@@ -17,6 +17,9 @@ urlpatterns = patterns('',
     # Auth API
     url(r'^api/1/', include('administration.urls')),
 
+    # Wander API
+    url(r'^api/1/', include('wander.urls', namespace='wander-api')),
+
     # Index
     url(r'^', include('starter_app.urls')),
 
