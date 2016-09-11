@@ -3,10 +3,11 @@ from django.db import models
 
 # Create your models here.
 from pytz import utc
-from rest_framework.fields import JSONField
+from django.contrib.postgres.fields import JSONField
 
 
 class Guide(models.Model):
+    username = models.CharField(max_length=30, blank=True, null=True)
     status_online = models.BooleanField(default=False)
     status_on_trip = models.BooleanField(default=False)
 
@@ -16,17 +17,19 @@ class Traveler(models.Model):
     name = models.CharField(max_length=30, blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
     occupation = models.CharField(max_length=100, blank=True, null=True)
-    interest = JSONField(default={})
+    interest = JSONField(null=True, blank=True, default={})
     country = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
 
 
 class Trip(models.Model):
+    guide = models.ForeignKey('wander.Guide', null=True, blank=True)
     traveler = models.ForeignKey('wander.Traveler')
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    start_location = JSONField(default={})
-    end_location = JSONField(default={})
+    start_location = JSONField(null=True, blank=True, default={})
+    end_location = JSONField(null=True, blank=True, default={})
     rating = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=12, default='Waiting')
 

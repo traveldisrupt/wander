@@ -4,11 +4,8 @@ from rest_framework import exceptions
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from wander.serializers import TripSerializer
-from wander.models import Traveler
-from wander.serializers import CreateTripSerializer
-from wander.models import Trip
-from wander.serializers import ViewTripSerializer
+from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer
+from wander.models import Traveler, Trip, Guide
 
 
 class TripView(GenericAPIView):
@@ -21,31 +18,45 @@ class TripView(GenericAPIView):
     serializer_class = TripSerializer
 
     def post(self, request, *args, **kwargs):
-        user = request.user
 
-        data = {'trip': 'trip_123'}
+        action = request.data.get('action')
+        trip_id = request.data.get('trip_id')
+        guide = request.data.get('username')
 
-        return Response({'status': 'success', 'data': data})
+        guide, created = Guide.objects.get_or_create(username=guide)
+
+        if action == 'accept':
+            Trip.objects.filter(id=trip_id).update(guide=guide, status='live')
+        elif action == 'cancelled':
+            Trip.objects.filter(id=trip_id).update(guide=guide, status='cancelled')
+
+        return Response({'status': 'success'})
 
     def get(self, request, *args, **kwargs):
 
         r = requests.get("https://thingspace.io/get/latest/dweet/for/padmaja-device")
         current_location = r.json()['with'][0]['content']
 
-        data = {'trip': {'id': 'trip_123',
-                         'start_time': '2015-08-1 11:01',
+        # Hard code get latest trip created.
+        trip = Trip.objects.latest('id')
+
+        data = {'trip': {'id': trip.id,
+                         'start_time': trip.start_time,
                          'traveler':
-                             {'name': 'Daniela',
-                              'age': '26',
-                              'occupation': 'Web Designer',
-                              'country': 'United States',
-                              'city': 'New York',
-                              'interest': {'Movies', 'Restuarants', 'Baseball'},
-                              'bio': 'I love exploring and learning. The world is flat.'},
+                             {'name': trip.traveler.name,
+                              'age': trip.traveler.age,
+                              'occupation': trip.traveler.occupation,
+                              'country': trip.traveler.country,
+                              'city': trip.traveler.city,
+                              'interest': trip.traveler.interest,
+                              'bio': trip.traveler.bio},
                          'start_location': {'lat': '37.7786', 'lon': '122.3893'},
                          'end_location': {'lat': '37.7786', 'lon': '122.3893'},
+                         'facts': [{'category': 'landmark', 'title': 'AT&T Park', 'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.', 'distance': '0.2 miles'},
+                                   {'category': 'restaurants', 'title': 'Orlando’s Caribbean BBQ', 'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.', 'distance': '0.2 miles'}
+                                   ],
                          'current_location': current_location,
-                         'status': 'live',
+                         'status': trip.status,
                          }
                 }
 
@@ -74,7 +85,7 @@ class CreateTripView(GenericAPIView):
 
         trip = Trip.objects.create(traveler=traveler)
 
-        data = {'trip_id': traveler.username}
+        data = {'trip_id': trip.id}
 
         return Response({'status': 'success', 'data': data})
 
@@ -94,9 +105,12 @@ class ViewTripView(GenericAPIView):
         # and create a new trip.
         trip_id = request.data.get('trip_id')
 
-        data = {'trip_id': trip_id, 'status': 'waiting'}
-
-        return Response({'status': 'success', 'data': data})
+        if Trip.objects.filter(id=trip_id).exists():
+            trip = Trip.objects.get(id=trip_id)
+            data = {'trip_id': trip_id, 'status': trip.status}
+            return Response({'status': 'success', 'data': data})
+        else:
+            return Response({'status': 'error', 'message': 'Trip does not exist.'})
 
 
 # class TwilioTokenView(GenericAPIView):
