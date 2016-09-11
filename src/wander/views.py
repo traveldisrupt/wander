@@ -38,8 +38,6 @@ def api_root(request, format=None):
 from twilio.util import TwilioCapability
 import twilio.twiml
 
-phone_pattern = re.compile(r"^[\d\+\-\(\) ]+$")
-
 class TripView(GenericAPIView):
     """
     ### Get the available trips.
