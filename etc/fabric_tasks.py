@@ -63,6 +63,8 @@ def set_env(system):
 
     env.log_level = logging.DEBUG
 
+    env.user_name = os.environ.get('SSH_USERNAME', 'ubuntu')
+
 
 def L():
     set_env('local')
@@ -152,8 +154,7 @@ def filr(cmd='get', file='.envs', use_sudo=False):
 
 
 def prepare():
-    manage('makemigrations')
-    manage('migrate')
+    #manage('migrate')
     manage('collectstatic --noinput -v1')
 
 
@@ -183,19 +184,18 @@ def upload_www():
 
 
 def upload_config():
-    put('./etc/nginx-vhost.conf', '/srv/config/%s' % env.virtual_host)
-    run("sed -i 's/{{project_name}}/%s/g' '/srv/config/%s'" % (env.project_name, env.virtual_host))
-    # try:
-    #     put('./etc/certs/%s.key' % env.virtual_host, '/srv/certs/')
-    #     put('./etc/certs/%s.crt' % env.virtual_host, '/srv/certs/')
-    # except:
-    #     print('No certs found')
+    virtual_hosts = env.virtual_host.split(',')
+    for virtual_host in virtual_hosts:
+        put('./etc/nginx-vhost.conf', '/srv/config/%s' % virtual_host)
+        run("sed -i 's/{{project_name}}/%s/g' '/srv/config/%s'" % (env.project_name, virtual_host))
 
 
 def deploy():
+    chown_everything()  # Figure out why /srv/config/ keeps getting changed to root ownership
     upload_app()
-    # upload_www() Removed for practicality, run manage:collectstatic instead
-    # upload_config() Removed for security
+    prepare()
+    upload_www()
+    upload_config()
 
 
 def make_wheels():
@@ -224,48 +224,42 @@ def push_image(live=False):
 
 
 def postgres(cmd='backup', tag='tmp'):
-    """
-    Task for backup and restore of database
-    :param cmd:
-    :param live:
-    :param tag:
-    :return:
-    """
-
     backup_name = 'db_backup.{tag}.tar.gz'.format(tag=tag)
-    backup_path = posixpath.join('/backup/', backup_name)
-
-    actions = {
-        'backup':
-            'tar -zcpf {backup_path} {data_path}'.format(
-                backup_path=backup_path,
-                data_path=env.postgres_data),
-        'restore':
-            'bash -c "tar xpf {backup_path} && chmod -R 700 {data_path}"'.format(
-                backup_path=backup_path,
-                data_path=env.postgres_data),
-    }
 
     if not env.is_local:
         backup_to_path = posixpath.join(env.project_dir, 'var/backups')
     else:
         backup_to_path = os.path.join(env.project_path, 'var/backups')
 
-    params = {
-        'volumes_from': '--volumes-from {0}_db_data_1'.format(re.sub('-', '', env.project_name)),
-        'volumes': '--volume {0}:/backup'.format(backup_to_path),
-        'image': 'postgres',
-        'cmd': actions[cmd],
-    }
+    backup_file = posixpath.join(backup_to_path, backup_name)
 
-    docker_run_once = 'docker run --rm {volumes_from} {volumes} {image} {cmd}'
-    if not env.is_local and cmd == 'restore':
-        answer = prompt('Do you first want to upload the backup?', default='no', )
-        if answer == 'yes':
-            filr(cmd='put', file=os.path.join('var/backups/', backup_name), use_sudo=True)
-    compose('stop postgres')
-    execute(docker_run_once.format(**params))
-    compose('start postgres')
+    if cmd == 'backup':
+        docker('cp zapgocore_postgres_1:{postgres_data} {backup_path}'.format(postgres_data=env.postgres_data,
+                                                                              backup_path=backup_to_path))
+        execute('tar -zcpf {backup_file} -C {backup_path} data'.format(backup_file=backup_file,
+                                                                        backup_path=backup_to_path))
+        execute('rm -rf {data_dir}'.format(data_dir=posixpath.join(backup_to_path, 'data')))
+    elif cmd == 'restore':
+        params = {
+            'volumes_from': '--volumes-from {0}_db_data_1'.format(re.sub('-', '', env.project_name)),
+            'volumes': '--volume {0}:/backup'.format(backup_to_path),
+            'image': 'postgres',
+            'cmd': 'bash -c "tar xpf {backup_path} -C /var/lib/postgresql/ && chmod -R 700 {data_path}"'.format(
+                backup_path=posixpath.join('/backup/', backup_name),
+                data_path=env.postgres_data),
+        }
+        docker_run_once = 'docker run --rm {volumes_from} {volumes} {image} {cmd}'
+        compose('stop postgres')
+        execute(docker_run_once.format(**params))
+        compose('start postgres')
+
+        # This didn't work:
+        #execute('tar xpvf {backup_file} && chmod -R 700 {backup_path}'.format(backup_file=backup_file,
+        #                                                                     backup_path=backup_to_path))
+        #docker('cp {backup_path} zapgocore_postgres_1:{postgres_data}'.format(backup_path=posixpath.join(backup_to_path,'data'),
+        #                                                                      postgres_data='/var/lib/postgresql/'))
+        #execute('rm -rf {data_dir}'.format(data_dir=posixpath.join(backup_to_path, 'data')))
+
     if not env.is_local and cmd == 'backup':
         answer = prompt('Did you want to download backup?', default='no', )
         if answer == 'yes':
@@ -582,3 +576,5 @@ def push_ssh(keyfile):
         run('echo {key} >> ~/.ssh/authorized_keys'.format(key=key))
 
 
+def chown_everything():
+    sudo("chown -R %s:%s /srv/" % (env.user_name, env.user_name))
