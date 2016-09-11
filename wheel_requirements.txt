@@ -36,6 +36,7 @@ git+https://github.com/michailbrynard/web3.py
 pillow
 requests
 markdown
+twilio
 
 django-countries
 django-timezone-field

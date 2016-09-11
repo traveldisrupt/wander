@@ -36,6 +36,7 @@ django-rest-auth
 pillow
 requests
 markdown
+twilio
 
 django-countries
 django-timezone-field
