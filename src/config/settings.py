@@ -59,8 +59,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'administration',
-    'starter_app',
-    'starter_dashboard',
     'wander'
 ]
 
