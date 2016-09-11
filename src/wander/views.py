@@ -8,6 +8,7 @@ from wander.serializers import TripSerializer
 from wander.models import Traveler
 from wander.serializers import CreateTripSerializer
 from wander.models import Trip
+from wander.serializers import ViewTripSerializer
 
 
 class TripView(GenericAPIView):
@@ -30,7 +31,6 @@ class TripView(GenericAPIView):
 
         r = requests.get("https://thingspace.io/get/latest/dweet/for/padmaja-device")
         current_location = r.json()['with'][0]['content']
-        print(current_location)
 
         data = {'trip': {'id': 'trip_123',
                          'start_time': '2015-08-1 11:01',
@@ -74,6 +74,56 @@ class CreateTripView(GenericAPIView):
 
         trip = Trip.objects.create(traveler=traveler)
 
-        data = {'trip': traveler.username}
+        data = {'trip_id': traveler.username}
 
         return Response({'status': 'success', 'data': data})
+
+
+class ViewTripView(GenericAPIView):
+    """
+    ### Get the trip info for Traveler.
+
+    """
+    permission_classes = ()
+    allowed_methods = ('POST',)
+    serializer_class = ViewTripSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        # If user creates a trip, check if there is more than one trip entry for the user. If so, then cancel previous
+        # and create a new trip.
+        trip_id = request.data.get('trip_id')
+
+        data = {'trip_id': trip_id, 'status': 'waiting'}
+
+        return Response({'status': 'success', 'data': data})
+
+
+# class TwilioTokenView(GenericAPIView):
+#     """
+#     ### Twilio token.
+#
+#     """
+#     permission_classes = ()
+#     allowed_methods = ('GET',)
+#     serializer_class = TwilioTokenSerializer
+#
+# @app.route('/token', methods=['GET'])
+# def token():
+#     # get credentials for environment variables
+#     account_sid = os.environ['TWILIO_ACCOUNT_SID']
+#     auth_token = os.environ['TWILIO_AUTH_TOKEN']
+#     application_sid = os.environ['TWILIO_TWIML_APP_SID']
+#
+#     # Generate a random user name
+#     username = 'padmaja-device_123456789'
+#     identity = username
+#
+#     # Create a Capability Token
+#     capability = TwilioCapability(account_sid, auth_token)
+#     capability.allow_client_outgoing(application_sid)
+#     capability.allow_client_incoming(identity)
+#     token = capability.generate()
+#
+#     # Return token info as JSON
+#     return jsonify(identity=identity, token=token)
