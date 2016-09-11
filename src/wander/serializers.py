@@ -16,3 +16,7 @@ class CreateTripSerializer(serializers.Serializer):
 
 class ViewTripSerializer(serializers.Serializer):
     trip_id = serializers.CharField(required=True)
+
+
+class CancelTripSerializer(serializers.Serializer):
+    trip_id = serializers.CharField(required=True)

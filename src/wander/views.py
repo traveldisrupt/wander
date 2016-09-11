@@ -1,11 +1,38 @@
 import urllib
+import datetime
 import requests
 from rest_framework import exceptions
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer
 from wander.models import Traveler, Trip, Guide
+from rest_framework.reverse import reverse
+from collections import OrderedDict
+
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def api_root(request, format=None):
+    """
+    ### API documentation for the Rehive digital currency platform.
+    ---
+    """
+    return Response(
+        [
+            {'Guide': OrderedDict(
+                [('View, Accept, Decline and Cancel Trips', reverse('wander-api:trips', request=request, format=format)),
+                 ]
+            )},
+            {'Traveler': OrderedDict(
+                [('View Trip', reverse('wander-api:view_trip', request=request, format=format)),
+                 ('Create Trip', reverse('wander-api:create_trip', request=request, format=format)),
+                 ('Cancel Trip', reverse('wander-api:cancel_trip', request=request, format=format)),
+                 ]
+            )}
+        ])
 
 
 class TripView(GenericAPIView):
@@ -28,7 +55,7 @@ class TripView(GenericAPIView):
         if action == 'accept':
             Trip.objects.filter(id=trip_id).update(guide=guide, status='live')
         elif action == 'cancelled':
-            Trip.objects.filter(id=trip_id).update(guide=guide, status='cancelled')
+            Trip.objects.filter(id=trip_id).update(guide=guide, status='cancelled', end_time=datetime.datetime.now(tz=utc))
 
         return Response({'status': 'success'})
 
@@ -121,33 +148,3 @@ class ViewTripView(GenericAPIView):
             return Response({'status': 'success', 'data': data})
         else:
             return Response({'status': 'error', 'message': 'Trip does not exist.'})
-
-
-            # class TwilioTokenView(GenericAPIView):
-            #     """
-            #     ### Twilio token.
-            #
-            #     """
-            #     permission_classes = ()
-            #     allowed_methods = ('GET',)
-            #     serializer_class = TwilioTokenSerializer
-            #
-            # @app.route('/token', methods=['GET'])
-            # def token():
-            #     # get credentials for environment variables
-            #     account_sid = os.environ['TWILIO_ACCOUNT_SID']
-            #     auth_token = os.environ['TWILIO_AUTH_TOKEN']
-            #     application_sid = os.environ['TWILIO_TWIML_APP_SID']
-            #
-            #     # Generate a random user name
-            #     username = 'padmaja-device_123456789'
-            #     identity = username
-            #
-            #     # Create a Capability Token
-            #     capability = TwilioCapability(account_sid, auth_token)
-            #     capability.allow_client_outgoing(application_sid)
-            #     capability.allow_client_incoming(identity)
-            #     token = capability.generate()
-            #
-            #     # Return token info as JSON
-            #     return jsonify(identity=identity, token=token)
