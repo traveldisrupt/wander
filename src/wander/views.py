@@ -72,6 +72,7 @@ class TripView(GenericAPIView):
 
         if action == 'accept':
             Trip.objects.filter(id=trip_id).update(guide=guide, status='live')
+            Counter.objects.filter(id=1).update(counter=0)
         elif action == 'cancel':
             Trip.objects.filter(id=trip_id).update(guide=guide, status='cancelled',
                                                    end_time=datetime.datetime.now(tz=utc))

@@ -23,45 +23,47 @@ def change_gps_coordinates():
                             "lat": str(count.coordinates['list'][count.counter]['lat'])})
 
         if count.coordinates['list'][count.counter]['fact'] == '1':
-            facts = {'list': [{'category': 'History',
-                               'title': 'Pier 43',
-                               'text': 'Built 1914. Pier 43 and its headhouse, a decorated hoisting tower for loading and unloading rail cars on and off ferries, was built in 1914 to serve the Belt Railroad.',
+            facts = {'list': [{'category': 'Knowledge',
+                               'title': 'Mission District',
+                               'text': 'The Mission District, also commonly called "The Mission.',
                                'distance': '0 miles',
-                               'lat': '37.809382',
-                               'lon': '-122.414465'},
-                              {'category': 'Landmark', 'title': 'AT&T Park',
-                               'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.',
+                               'lat': '37.7861466',
+                               'lon': '-122.4065889'},
+                              {'category': 'Landmark',
+                               'title': 'Yerba Buena Gardens',
+                               'text': 'Several gardens share space with dramatic outdoor public art pieces, including a memorial waterfall.',
                                'distance': '0.2 miles',
-                               'lat': '37.7786',
-                               'lon': '-122.3893'},
+                               'lat': '37.7855834',
+                               'lon': '-122.4050977'},
                               {'category': 'Restaurants',
-                               'title': "Pedro's Cantina",
-                               'text': 'Mexican food & margaritas served in a roomy converted warehouse outfitted with many high-def TVs.',
+                               'title': "Super Duper Burgers",
+                               'text': 'Counter-service chain outpost using local ingredients in its burgers, fries & organic milkshakes. ',
                                'distance': '0.3 miles',
                                'rating': 4,
-                               'lat': '37.77935',
-                               'lon': '-122.39051'}]
+                               'lat': '37.7858762',
+                               'lon': '-122.4105171'}]
                      }
 
         if count.coordinates['list'][count.counter]['fact'] == '2':
-            facts = {'list': [{'category': 'History',
-                               'title': 'Pier 43',
-                               'text': 'Built 1914. Pier 43 and its headhouse, a decorated hoisting tower for loading and unloading rail cars on and off ferries, was built in 1914 to serve the Belt Railroad.',
+            facts = {'list': [{'category': 'Knowledge',
+                               'title': 'Mission District',
+                               'text': 'The Mission District, also commonly called "The Mission.',
                                'distance': '0 miles',
-                               'lat': '37.809382',
-                               'lon': '-122.414465'},
-                              {'category': 'Landmark', 'title': 'AT&T Park',
-                               'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.',
+                               'lat': '37.7861466',
+                               'lon': '-122.4065889'},
+                              {'category': 'Landmark',
+                               'title': 'Yerba Buena Gardens',
+                               'text': 'Several gardens share space with dramatic outdoor public art pieces, including a memorial waterfall.',
                                'distance': '0.2 miles',
-                               'lat': '37.7786',
-                               'lon': '-122.3893'},
+                               'lat': '37.7855834',
+                               'lon': '-122.4050977'},
                               {'category': 'Restaurants',
-                               'title': "Pedro's Cantina",
-                               'text': 'Mexican food & margaritas served in a roomy converted warehouse outfitted with many high-def TVs.',
+                               'title': "Super Duper Burgers",
+                               'text': 'Counter-service chain outpost using local ingredients in its burgers, fries & organic milkshakes. ',
                                'distance': '0.3 miles',
                                'rating': 4,
-                               'lat': '37.77935',
-                               'lon': '-122.39051'}]
+                               'lat': '37.7858762',
+                               'lon': '-122.4105171'}]
                      }
 
         elif count.coordinates['list'][count.counter]['fact'] == '3':
@@ -85,7 +87,26 @@ def change_gps_coordinates():
                                'lon': '-122.39051'}]
                      }
         else:
-            facts = {'list': []}
+            facts = {'list': [{'category': 'Knowledge',
+                               'title': 'Mission District',
+                               'text': 'The Mission District, also commonly called "The Mission.',
+                               'distance': '0 miles',
+                               'lat': '37.7861466',
+                               'lon': '-122.4065889'},
+                              {'category': 'Landmark',
+                               'title': 'Yerba Buena Gardens',
+                               'text': 'Several gardens share space with dramatic outdoor public art pieces, including a memorial waterfall.',
+                               'distance': '0.2 miles',
+                               'lat': '37.7855834',
+                               'lon': '-122.4050977'},
+                              {'category': 'Restaurants',
+                               'title': "Super Duper Burgers",
+                               'text': 'Counter-service chain outpost using local ingredients in its burgers, fries & organic milkshakes. ',
+                               'distance': '0.3 miles',
+                               'rating': 4,
+                               'lat': '37.7858762',
+                               'lon': '-122.4105171'}]
+                     }
 
         if Trip.objects.filter(status='live').exists():
             trip = Trip.objects.filter(status='live').latest('id')

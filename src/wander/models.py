@@ -27,7 +27,8 @@ class Traveler(models.Model):
     interest = JSONField(null=True, blank=True, default={"all": ["Movies", "Running", "Food", "Technology"]})
     country = models.CharField(max_length=100, default="South Africa")
     city = models.CharField(max_length=100, default="Cape Town")
-    bio = models.TextField(default="I recently moved to San Francisco. I love exploring - it is the answer to everything.")
+    bio = models.TextField(
+        default="I recently moved to San Francisco. I love exploring - it is the answer to everything.")
 
 
 class Trip(models.Model):
@@ -38,7 +39,26 @@ class Trip(models.Model):
     start_location = JSONField(null=True, blank=True, default={})
     end_location = JSONField(null=True, blank=True, default={})
     rating = models.IntegerField(blank=True, null=True)
-    facts = JSONField(null=True, blank=True, default={})
+    facts = JSONField(null=True, blank=True, default={'list': [{'category': 'Knowledge',
+                                                                'title': 'Mission District',
+                                                                'text': 'The Mission District, also commonly called "The Mission.',
+                                                                'distance': '0 miles',
+                                                                'lat': '37.7861466',
+                                                                'lon': '-122.4065889'},
+                                                               {'category': 'Landmark',
+                                                                'title': 'Yerba Buena Gardens',
+                                                                'text': 'Several gardens share space with dramatic outdoor public art pieces, including a memorial waterfall.',
+                                                                'distance': '0.2 miles',
+                                                                'lat': '37.7855834',
+                                                                'lon': '-122.4050977'},
+                                                               {'category': 'Restaurants',
+                                                                'title': "Super Duper Burgers",
+                                                                'text': 'Counter-service chain outpost using local ingredients in its burgers, fries & organic milkshakes. ',
+                                                                'distance': '0.3 miles',
+                                                                'rating': 4,
+                                                                'lat': '37.7858762',
+                                                                'lon': '-122.4105171'}]
+                                                      })
     status = models.CharField(max_length=12, default='waiting')
 
     def save(self, *args, **kwargs):
