@@ -177,7 +177,10 @@ class CancelTripView(GenericAPIView):
         trip_id = request.data.get('trip_id')
 
         if Trip.objects.filter(id=trip_id).exists():
-            trip = Trip.objects.filter(id=trip_id).update(status='cancelled', end_time=datetime.datetime.now(tz=utc))
+            trip = Trip.objects.get(id=trip_id)
+            trip.end_time = datetime.datetime.now(tz=utc)
+            trip.status = 'cancelled'
+            trip.save()
             data = {'trip_id': trip_id, 'status': trip.status}
             return Response({'status': 'success', 'data': data})
         else:
