@@ -1,5 +1,5 @@
 from django.contrib import admin
-from wander.models import Guide, Traveler, Trip
+from wander.models import Guide, Traveler, Trip, Counter
 
 
 class CustomModelAdmin(admin.ModelAdmin):
@@ -20,6 +20,11 @@ class TripAdmin(CustomModelAdmin):
     pass
 
 
+class CounterAdmin(CustomModelAdmin):
+    pass
+
+
 admin.site.register(Guide, GuideAdmin)
 admin.site.register(Traveler, TravelerAdmin)
 admin.site.register(Trip, TripAdmin)
+admin.site.register(Counter, CounterAdmin)

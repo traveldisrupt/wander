@@ -19,7 +19,8 @@ class ViewTripSerializer(serializers.Serializer):
 
 
 class CancelTripSerializer(serializers.Serializer):
-    trip_id = serializers.CharField(required=True)
+    trip_id = serializers.CharField(required=False)
+
 
 class TwilioVoiceSerializer(serializers.Serializer):
     To = serializers.CharField()

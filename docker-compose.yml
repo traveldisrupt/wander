@@ -22,3 +22,18 @@ db_data:
   command: echo "DB data volume!"
   volumes:
     - /var/lib/postgresql/data
+
+worker_general:
+  extends:
+     service: webapp
+     file: ./etc/docker-services.yml
+  command: bash -c "celery -A config.celery worker --loglevel=INFO --concurrency=4 -Q general-${HOST_NAME}"
+  links:
+    - postgres
+
+scheduler:
+  extends:
+     service: webapp
+     file: ./etc/docker-services.yml
+  command: bash -c "celery -A config.celery worker --beat --loglevel=INFO --concurrency=1 -Q dummy-queue"
+
