@@ -8,14 +8,12 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer, CancelTripSerializer
+from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer, CancelTripSerializer, TwilioVoiceSerializer
 from wander.models import Traveler, Trip, Guide
 from rest_framework.reverse import reverse
 from collections import OrderedDict
 from django.http import HttpResponse
 import re
-
-from src.wander.serializers import TwilioVoiceSerializer
 
 alphanumeric_only = re.compile('[\W_]+')
 phone_pattern = re.compile(r"^[\d\+\-\(\) ]+$")
