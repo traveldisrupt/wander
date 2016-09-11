@@ -13,6 +13,7 @@ urlpatterns = (
     url(r'^trip/cancel/$', views.CancelTripView.as_view(), name='cancel_trip'),
 
     url(r'^twilio/token/$', views.TwilioTokenView.as_view(), name='twilio_token_view'),
+    url(r'^twilio/voice/$', views.TwilioVoiceView.as_view(), name='twilio_voice_view'),
     url(r'^$', views.api_root),
 )
 

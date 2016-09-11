@@ -8,14 +8,15 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer, CancelTripSerializer
+from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer, CancelTripSerializer, TwilioVoiceSerializer
 from wander.models import Traveler, Trip, Guide
 from rest_framework.reverse import reverse
 from collections import OrderedDict
-
+from django.http import HttpResponse
 import re
 
 alphanumeric_only = re.compile('[\W_]+')
+phone_pattern = re.compile(r"^[\d\+\-\(\) ]+$")
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -209,7 +210,11 @@ class TwilioTokenView(GenericAPIView):
         application_sid = getattr(settings, 'TWILIO_TWIML_APP_SID')
 
         # Generate a random user name
-        identity = alphanumeric_only.sub('', 'ford_prefect')
+        user = self.request.query_params.get('user', '')
+        if user:
+            identity = alphanumeric_only.sub('', user)
+        else:
+            identity = alphanumeric_only.sub('', 'default')
 
         # Create a Capability Token
         capability = TwilioCapability(account_sid, auth_token)
@@ -220,26 +225,27 @@ class TwilioTokenView(GenericAPIView):
         return Response(OrderedDict([('identity', identity), ('token', token)]))
 
 
-# class TwilioVoiceView(GenericAPIView):
-#     """
-#     ### Twilio token.
-#
-#     """
-#     permission_classes = ()
-#     allowed_methods = ('POST',)
-#
-#     def post(self, request, *args, **kwargs):
-#         resp = twilio.twiml.Response()
-#         if "To" in request.data and request.data["To"] != '':
-#             dial = resp.dial(callerId=getattr(settings,'TWILIO_CALLER_ID'))
-#             # wrap the phone number or client name in the appropriate TwiML verb
-#             # by checking if the number given has only digits and format symbols
-#             if phone_pattern.match(request.data["To"]):
-#                 dial.number(request.form["To"])
-#             else:
-#                 dial.client(request.form["To"])
-#         else:
-#             resp.say("Thanks for calling!")
-#
-#         return Response({'identity': identity, 'toke ': token})
+class TwilioVoiceView(GenericAPIView):
+    """
+    ### Twilio token.
+
+    """
+    permission_classes = ()
+    allowed_methods = ('POST',)
+    serializer_class = TwilioVoiceSerializer
+
+    def post(self, request, *args, **kwargs):
+        resp = twilio.twiml.Response()
+        if "To" in request.data and request.data["To"] != '':
+            dial = resp.dial(callerId=getattr(settings,'TWILIO_CALLER_ID'))
+            # wrap the phone number or client name in the appropriate TwiML verb
+            # by checking if the number given has only digits and format symbols
+            if phone_pattern.match(request.data["To"]):
+                dial.number(request.data["To"])
+            else:
+                dial.client(request.data["To"])
+        else:
+            resp.say("Thanks for calling!")
+
+        return HttpResponse(str(resp), content_type='text/xml')
 
