@@ -14,6 +14,7 @@ class Guide(models.Model):
 
 class Traveler(models.Model):
     username = models.CharField(max_length=30, blank=True, null=True)
+    profile = models.URLField(default='https://scontent-sjc2-1.xx.fbcdn.net/v/t1.0-9/12688174_10207842733043301_2986078780578216664_n.jpg?oh=8c537cad4e8cb989e42a718cdea69eb2&oe=58481E5B')
     name = models.CharField(max_length=30, blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
     occupation = models.CharField(max_length=100, blank=True, null=True)
