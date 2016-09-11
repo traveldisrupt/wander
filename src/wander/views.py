@@ -30,7 +30,7 @@ def api_root(request, format=None):
             {'Traveler': OrderedDict(
                 [('View Trip', reverse('wander-api:view_trip', request=request, format=format)),
                  ('Create Trip', reverse('wander-api:create_trip', request=request, format=format)),
-                 ('Cancel Trip', reverse('wander-api:cancel_trip', request=request, format=format)),
+                 # ('Cancel Trip', reverse('wander-api:cancel_trip', request=request, format=format)),
                  ]
             )}
         ])
