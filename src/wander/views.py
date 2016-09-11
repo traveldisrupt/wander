@@ -1,5 +1,6 @@
 import urllib
 import datetime
+from pytz import utc
 import requests
 from django.conf import settings
 from rest_framework import exceptions
@@ -11,6 +12,7 @@ from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSer
 from wander.models import Traveler, Trip, Guide
 from rest_framework.reverse import reverse
 from collections import OrderedDict
+from src.wander.serializers import CancelTripSerializer
 
 
 @api_view(['GET'])
@@ -30,7 +32,11 @@ def api_root(request, format=None):
             {'Traveler': OrderedDict(
                 [('View Trip', reverse('wander-api:view_trip', request=request, format=format)),
                  ('Create Trip', reverse('wander-api:create_trip', request=request, format=format)),
-                 # ('Cancel Trip', reverse('wander-api:cancel_trip', request=request, format=format)),
+                 ('Cancel Trip', reverse('wander-api:cancel_trip', request=request, format=format)),
+                 ]
+            )},
+            {'Twilio': OrderedDict(
+                [('Twilio Token', reverse('wander-api:twilio_token_view', request=request, format=format)),
                  ]
             )}
         ])
@@ -120,8 +126,8 @@ class CreateTripView(GenericAPIView):
         traveler, created = Traveler.objects.get_or_create(username=username)
 
         # Create trip
-        if Trip.objects.filter(traveler=traveler, status='Waiting').exists():
-            Trip.objects.update(status='Cancelled')
+        if Trip.objects.filter(traveler=traveler, status='waiting').exists():
+            Trip.objects.filter(traveler=traveler).update(status='cancelled', end_time=datetime.datetime.now(tz=utc))
 
         trip = Trip.objects.create(traveler=traveler)
 
@@ -153,6 +159,29 @@ class ViewTripView(GenericAPIView):
             return Response({'status': 'error', 'message': 'Trip does not exist.'})
 
 
+class CancelTripView(GenericAPIView):
+    """
+    ### Get the trip info for Traveler.
+
+    """
+    permission_classes = ()
+    allowed_methods = ('POST',)
+    serializer_class = CancelTripSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        # If user creates a trip, check if there is more than one trip entry for the user. If so, then cancel previous
+        # and create a new trip.
+        trip_id = request.data.get('trip_id')
+
+        if Trip.objects.filter(id=trip_id).exists():
+            trip = Trip.objects.filter(id=trip_id).update(status='cancelled', end_time=datetime.datetime.now(tz=utc))
+            data = {'trip_id': trip_id, 'status': trip.status}
+            return Response({'status': 'success', 'data': data})
+        else:
+            return Response({'status': 'error', 'message': 'Trip does not exist.'})
+
+
 class TwilioTokenView(GenericAPIView):
     """
     ### Twilio token.
@@ -162,6 +191,7 @@ class TwilioTokenView(GenericAPIView):
     allowed_methods = ('GET',)
 
     def get(self, request, *args, **kwargs):
+
         # get credentials for environment variables
         account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID')
         auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN')
@@ -176,7 +206,7 @@ class TwilioTokenView(GenericAPIView):
         capability.allow_client_incoming(identity)
         token = capability.generate()
 
-        return Response({'identity': identity, 'token': token})
+        return Response(OrderedDict([('identity', identity), ('token', token)]))
 
 
 # class TwilioVoiceView(GenericAPIView):

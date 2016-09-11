@@ -10,7 +10,7 @@ urlpatterns = (
 
     url(r'^trip/create/$', views.CreateTripView.as_view(), name='create_trip'),
     url(r'^trip/view/$', views.ViewTripView.as_view(), name='view_trip'),
-    # url(r'^trip/cancel/$', views.CancelTripView.as_view(), name='cancel_trip'),
+    url(r'^trip/cancel/$', views.CancelTripView.as_view(), name='cancel_trip'),
 
     url(r'^twilio/token/$', views.TwilioTokenView.as_view(), name='twilio_token_view'),
     url(r'^$', views.api_root),
