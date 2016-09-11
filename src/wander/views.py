@@ -49,11 +49,22 @@ class TripView(GenericAPIView):
                               'country': trip.traveler.country,
                               'city': trip.traveler.city,
                               'interest': trip.traveler.interest,
-                              'bio': trip.traveler.bio},
+                              'bio': trip.traveler.bio,
+                              'profile': trip.traveler.profile},
                          'start_location': {'lat': '37.7786', 'lon': '122.3893'},
                          'end_location': {'lat': '37.7786', 'lon': '122.3893'},
-                         'facts': [{'category': 'landmark', 'title': 'AT&T Park', 'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.', 'distance': '0.2 miles'},
-                                   {'category': 'restaurants', 'title': 'Orlando’s Caribbean BBQ', 'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.', 'distance': '0.2 miles'}
+                         'facts': [{'category': 'History',
+                                    'title': 'Pier 43',
+                                    'text': 'Built 1914. Pier 43 and its headhouse, a decorated hoisting tower for loading and unloading rail cars on and off ferries, was built in 1914 to serve the Belt Railroad.',
+                                    'distance': '0 miles'},
+                                   {'category': 'Landmark', 'title': 'AT&T Park',
+                                    'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.',
+                                    'distance': '0.2 miles'},
+                                   {'category': 'Restaurants',
+                                    'title': "Pedro's Cantina",
+                                    'text': 'Mexican food & margaritas served in a roomy converted warehouse outfitted with many high-def TVs.',
+                                    'distance': '0.3 miles',
+                                    'rating': 4},
                                    ],
                          'current_location': current_location,
                          'status': trip.status,
@@ -73,7 +84,6 @@ class CreateTripView(GenericAPIView):
     serializer_class = CreateTripSerializer
 
     def post(self, request, *args, **kwargs):
-
         # If user creates a trip, check if there is more than one trip entry for the user. If so, then cancel previous
         # and create a new trip.
         username = request.data.get('username')
@@ -113,31 +123,31 @@ class ViewTripView(GenericAPIView):
             return Response({'status': 'error', 'message': 'Trip does not exist.'})
 
 
-# class TwilioTokenView(GenericAPIView):
-#     """
-#     ### Twilio token.
-#
-#     """
-#     permission_classes = ()
-#     allowed_methods = ('GET',)
-#     serializer_class = TwilioTokenSerializer
-#
-# @app.route('/token', methods=['GET'])
-# def token():
-#     # get credentials for environment variables
-#     account_sid = os.environ['TWILIO_ACCOUNT_SID']
-#     auth_token = os.environ['TWILIO_AUTH_TOKEN']
-#     application_sid = os.environ['TWILIO_TWIML_APP_SID']
-#
-#     # Generate a random user name
-#     username = 'padmaja-device_123456789'
-#     identity = username
-#
-#     # Create a Capability Token
-#     capability = TwilioCapability(account_sid, auth_token)
-#     capability.allow_client_outgoing(application_sid)
-#     capability.allow_client_incoming(identity)
-#     token = capability.generate()
-#
-#     # Return token info as JSON
-#     return jsonify(identity=identity, token=token)
+            # class TwilioTokenView(GenericAPIView):
+            #     """
+            #     ### Twilio token.
+            #
+            #     """
+            #     permission_classes = ()
+            #     allowed_methods = ('GET',)
+            #     serializer_class = TwilioTokenSerializer
+            #
+            # @app.route('/token', methods=['GET'])
+            # def token():
+            #     # get credentials for environment variables
+            #     account_sid = os.environ['TWILIO_ACCOUNT_SID']
+            #     auth_token = os.environ['TWILIO_AUTH_TOKEN']
+            #     application_sid = os.environ['TWILIO_TWIML_APP_SID']
+            #
+            #     # Generate a random user name
+            #     username = 'padmaja-device_123456789'
+            #     identity = username
+            #
+            #     # Create a Capability Token
+            #     capability = TwilioCapability(account_sid, auth_token)
+            #     capability.allow_client_outgoing(application_sid)
+            #     capability.allow_client_incoming(identity)
+            #     token = capability.generate()
+            #
+            #     # Return token info as JSON
+            #     return jsonify(identity=identity, token=token)
