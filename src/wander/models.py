@@ -32,7 +32,7 @@ class Trip(models.Model):
     start_location = JSONField(null=True, blank=True, default={})
     end_location = JSONField(null=True, blank=True, default={})
     rating = models.IntegerField(blank=True, null=True)
-    status = models.CharField(max_length=12, default='Waiting')
+    status = models.CharField(max_length=12, default='waiting')
 
     def save(self, *args, **kwargs):
         """ On save, update timestamps"""

@@ -1,5 +1,6 @@
 import urllib
 import datetime
+from pytz import utc
 import requests
 from django.conf import settings
 from rest_framework import exceptions
@@ -7,7 +8,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer
+from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSerializer, CancelTripSerializer
 from wander.models import Traveler, Trip, Guide
 from rest_framework.reverse import reverse
 from collections import OrderedDict
@@ -36,7 +37,11 @@ def api_root(request, format=None):
             {'Traveler': OrderedDict(
                 [('View Trip', reverse('wander-api:view_trip', request=request, format=format)),
                  ('Create Trip', reverse('wander-api:create_trip', request=request, format=format)),
-                 # ('Cancel Trip', reverse('wander-api:cancel_trip', request=request, format=format)),
+                 ('Cancel Trip', reverse('wander-api:cancel_trip', request=request, format=format)),
+                 ]
+            )},
+            {'Twilio': OrderedDict(
+                [('Twilio Token', reverse('wander-api:twilio_token_view', request=request, format=format)),
                  ]
             )}
         ])
@@ -92,15 +97,21 @@ class TripView(GenericAPIView):
                          'facts': [{'category': 'History',
                                     'title': 'Pier 43',
                                     'text': 'Built 1914. Pier 43 and its headhouse, a decorated hoisting tower for loading and unloading rail cars on and off ferries, was built in 1914 to serve the Belt Railroad.',
-                                    'distance': '0 miles'},
+                                    'distance': '0 miles',
+                                    'lat': '37.809382',
+                                    'lon': '-122.414465'},
                                    {'category': 'Landmark', 'title': 'AT&T Park',
                                     'text': 'The park stands along the San Francisco Bay, a segment of which is named McCovey Cove in honor of former Giants player Willie McCovey.',
-                                    'distance': '0.2 miles'},
+                                    'distance': '0.2 miles',
+                                    'lat': '37.809382',
+                                    'lon': '-122.414465'},
                                    {'category': 'Restaurants',
                                     'title': "Pedro's Cantina",
                                     'text': 'Mexican food & margaritas served in a roomy converted warehouse outfitted with many high-def TVs.',
                                     'distance': '0.3 miles',
-                                    'rating': 4},
+                                    'rating': 4,
+                                    'lat': '37.809382',
+                                    'lon': '-122.414465'},
                                    ],
                          'current_location': current_location,
                          'status': trip.status,
@@ -126,8 +137,8 @@ class CreateTripView(GenericAPIView):
         traveler, created = Traveler.objects.get_or_create(username=username)
 
         # Create trip
-        if Trip.objects.filter(traveler=traveler, status='Waiting').exists():
-            Trip.objects.update(status='Cancelled')
+        if Trip.objects.filter(traveler=traveler, status='waiting').exists():
+            Trip.objects.filter(traveler=traveler).update(status='cancelled', end_time=datetime.datetime.now(tz=utc))
 
         trip = Trip.objects.create(traveler=traveler)
 
@@ -159,6 +170,32 @@ class ViewTripView(GenericAPIView):
             return Response({'status': 'error', 'message': 'Trip does not exist.'})
 
 
+class CancelTripView(GenericAPIView):
+    """
+    ### Get the trip info for Traveler.
+
+    """
+    permission_classes = ()
+    allowed_methods = ('POST',)
+    serializer_class = CancelTripSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        # If user creates a trip, check if there is more than one trip entry for the user. If so, then cancel previous
+        # and create a new trip.
+        trip_id = request.data.get('trip_id')
+
+        if Trip.objects.filter(id=trip_id).exists():
+            trip = Trip.objects.get(id=trip_id)
+            trip.end_time = datetime.datetime.now(tz=utc)
+            trip.status = 'cancelled'
+            trip.save()
+            data = {'trip_id': trip_id, 'status': trip.status}
+            return Response({'status': 'success', 'data': data})
+        else:
+            return Response({'status': 'error', 'message': 'Trip does not exist.'})
+
+
 class TwilioTokenView(GenericAPIView):
     """
     ### Twilio token.
@@ -168,6 +205,7 @@ class TwilioTokenView(GenericAPIView):
     allowed_methods = ('GET',)
 
     def get(self, request, *args, **kwargs):
+
         # get credentials for environment variables
         account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID')
         auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN')
@@ -182,7 +220,7 @@ class TwilioTokenView(GenericAPIView):
         capability.allow_client_incoming(identity)
         token = capability.generate()
 
-        return Response({'identity': identity, 'token': token})
+        return Response(OrderedDict([('identity', identity), ('token', token)]))
 
 
 class TwilioVoiceView(GenericAPIView):
