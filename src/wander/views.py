@@ -210,7 +210,11 @@ class TwilioTokenView(GenericAPIView):
         application_sid = getattr(settings, 'TWILIO_TWIML_APP_SID')
 
         # Generate a random user name
-        identity = alphanumeric_only.sub('', 'ford_prefect')
+        user = self.request.query_params.get('user', '')
+        if user:
+            identity = alphanumeric_only.sub('', user)
+        else:
+            identity = alphanumeric_only.sub('', 'default')
 
         # Create a Capability Token
         capability = TwilioCapability(account_sid, auth_token)
