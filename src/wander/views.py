@@ -11,9 +11,13 @@ from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSer
 from wander.models import Traveler, Trip, Guide
 from rest_framework.reverse import reverse
 from collections import OrderedDict
+from django.http import HttpResponse
 import re
 
+from src.wander.serializers import TwilioVoiceSerializer
+
 alphanumeric_only = re.compile('[\W_]+')
+phone_pattern = re.compile(r"^[\d\+\-\(\) ]+$")
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -181,26 +185,27 @@ class TwilioTokenView(GenericAPIView):
         return Response({'identity': identity, 'token': token})
 
 
-# class TwilioVoiceView(GenericAPIView):
-#     """
-#     ### Twilio token.
-#
-#     """
-#     permission_classes = ()
-#     allowed_methods = ('POST',)
-#
-#     def post(self, request, *args, **kwargs):
-#         resp = twilio.twiml.Response()
-#         if "To" in request.data and request.data["To"] != '':
-#             dial = resp.dial(callerId=getattr(settings,'TWILIO_CALLER_ID'))
-#             # wrap the phone number or client name in the appropriate TwiML verb
-#             # by checking if the number given has only digits and format symbols
-#             if phone_pattern.match(request.data["To"]):
-#                 dial.number(request.form["To"])
-#             else:
-#                 dial.client(request.form["To"])
-#         else:
-#             resp.say("Thanks for calling!")
-#
-#         return Response({'identity': identity, 'toke ': token})
+class TwilioVoiceView(GenericAPIView):
+    """
+    ### Twilio token.
+
+    """
+    permission_classes = ()
+    allowed_methods = ('POST',)
+    serializer_class = TwilioVoiceSerializer
+
+    def post(self, request, *args, **kwargs):
+        resp = twilio.twiml.Response()
+        if "To" in request.data and request.data["To"] != '':
+            dial = resp.dial(callerId=getattr(settings,'TWILIO_CALLER_ID'))
+            # wrap the phone number or client name in the appropriate TwiML verb
+            # by checking if the number given has only digits and format symbols
+            if phone_pattern.match(request.data["To"]):
+                dial.number(request.data["To"])
+            else:
+                dial.client(request.data["To"])
+        else:
+            resp.say("Thanks for calling!")
+
+        return HttpResponse(str(resp), content_type='text/xml')
 
