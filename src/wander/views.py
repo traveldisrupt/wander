@@ -11,7 +11,9 @@ from wander.serializers import TripSerializer, CreateTripSerializer, ViewTripSer
 from wander.models import Traveler, Trip, Guide
 from rest_framework.reverse import reverse
 from collections import OrderedDict
+import re
 
+alphanumeric_only = re.compile('[\W_]+')
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -167,8 +169,8 @@ class TwilioTokenView(GenericAPIView):
         auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN')
         application_sid = getattr(settings, 'TWILIO_TWIML_APP_SID')
 
-        username = 'padmaja-device'
-        identity = username
+        # Generate a random user name
+        identity = alphanumeric_only.sub('', 'ford_prefect')
 
         # Create a Capability Token
         capability = TwilioCapability(account_sid, auth_token)
